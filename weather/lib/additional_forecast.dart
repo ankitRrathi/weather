@@ -20,8 +20,8 @@ class Additional extends StatelessWidget {
         Column(
           children: [
           Icon(icon,size: 35,),
-          Text(label,style: TextStyle(fontSize: 16,),),
-          Text(value,style: TextStyle(fontSize: 15),)
+          Text(label,style:const  TextStyle(fontSize: 16,),),
+          Text(value,style:const  TextStyle(fontSize: 15),)
           ],
         ),
         
