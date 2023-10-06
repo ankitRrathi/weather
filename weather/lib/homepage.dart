@@ -1,4 +1,3 @@
-// ignore_for_file: prefer_typing_uninitialized_variables
 
 import 'dart:convert';
 import 'dart:ui';
@@ -6,8 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:velocity_x/velocity_x.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:weather/additional_forecast.dart';
-import 'package:weather/weather_forecast.dart';
 import 'package:http/http.dart' as http;
+import 'package:weather/weather_forecast.dart';
+import 'package:intl/intl.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -17,6 +17,8 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
+  late Future<Map<String,dynamic>> weather ;
+ 
   Future<Map<String, dynamic>> getCurrentWeather() async {
     try {
       final res = await http.get(
@@ -38,6 +40,12 @@ class _HomepageState extends State<Homepage> {
       throw e.toString();
     }
   }
+    @override
+  void initState() {
+    super.initState();
+    weather =getCurrentWeather();
+  }
+ 
 
   @override
   Widget build(BuildContext context) {
@@ -50,17 +58,17 @@ class _HomepageState extends State<Homepage> {
             InkWell(
                 onTap: () {
                   setState(() {
-                    getCurrentWeather();
+                   weather= getCurrentWeather();
                   });
                 },
                 child: const Icon(CupertinoIcons.refresh_thick).px12())
           ],
         ),
         body: FutureBuilder(
-          future: getCurrentWeather(),
+          future: weather,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator.adaptive());
             }
             // for now i am commenting this parrt to handle the error later
             if (snapshot.hasError) {
@@ -135,35 +143,34 @@ class _HomepageState extends State<Homepage> {
                   const SizedBox(
                     height: 8,
                   ),
-                  // SingleChildScrollView(
-                  //   scrollDirection: Axis.horizontal,
-                  //   child: Row(
-                  //     children: [
-                  //       for (int i = 0; i < 5; i++)
-                  //         Forecast(
-                            
-                  //           time: data['list'][i + 1]['dt_txt'].toString(),
-                  //           icon: data['list'][i + 1]['main']['temp']
-                  //                           .toString() ==
-                  //                       'Clouds' ||
-                  //                   data['list'][i + 1]['main']['temp']
-                  //                           .toString() ==
-                  //                       "Rain"
-                  //               ? CupertinoIcons.cloud
-                  //               : Icons.sunny,
-                  //           temp:
-                  //               data['list'][i + 1]['main']['temp'].toString(),
-                  //         ),
-                  //     ],
-                  //   ),
-                  // ),
+                  
+                  SizedBox(
+                    height: 120,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: 5,
+                      itemBuilder: (contect,index)
+                      {
+                        final hourleyForcast = data['list'][index +1];
+                        final time =DateTime.parse(hourleyForcast['dt_txt']);
+                        
+                      
+                        return Forecast(
+                          time: DateFormat.j().format(time),
+                          temp: hourleyForcast['main']['temp'].toString(),
+                          icon:data['list'][index + 1]['main']['temp']
+                                            .toString() ==
+                                        'Clouds' ||
+                                    data['list'][index + 1]['main']['temp']
+                                           .toString() ==
+                                       "Rain"
+                                ? CupertinoIcons.cloud
+                              : Icons.sunny,
+                        );
 
-                  ListView.builder(
-                    itemCount: 5,
-                    itemBuilder: (contect,index)
-                    {
-
-                    },
+                      }
+                      ,
+                    ),
                   ),
                   const SizedBox(height: 20),
                   const Align(
